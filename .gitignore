@@ -25,7 +25,6 @@ public/storage
 /public/css/
 /public/js/
 /public/vendor/
-/public/
 # IDEs and editor settings
 .vscode/
 /.idea/
