@@ -1,0 +1,34 @@
+# Node & vendor directories
+/node_modules/
+/vendor/
+/tests/
+# Environment files
+.env
+.env.*   # مثل .env.testing
+
+# Laravel public storage (symlink)
+public/storage
+
+# Laravel user uploads
+/public/uploads/
+/public/assets/media/
+/public/json/
+# Laravel storage files
+/storage/*.key
+/storage/*.log
+/storage/debugbar/
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+/public/build/
+/public/css/
+/public/js/
+/public/vendor/
+# IDEs and editor settings
+.vscode/
+/.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
