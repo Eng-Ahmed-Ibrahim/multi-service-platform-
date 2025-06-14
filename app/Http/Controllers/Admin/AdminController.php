@@ -16,8 +16,7 @@ class AdminController extends Controller
 {
     public $model_view_folder;
 
-    //default namespace view files hello world this ahmed ebrahim
-
+    //Test
     public function __construct()
     {
         $this->middleware(['permission:view admins'])->only('index');
