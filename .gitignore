@@ -1,7 +1,7 @@
 # Node & vendor directories
 /node_modules/
 /vendor/
-
+/tests/
 # Environment files
 .env
 .env.*   # مثل .env.testing
@@ -21,7 +21,10 @@ public/storage
 /storage/framework/sessions/*
 /storage/framework/views/*
 /storage/logs/*
-
+/public/build/
+/public/css/
+/public/js/
+/public/vendor/
 # IDEs and editor settings
 .vscode/
 /.idea/
