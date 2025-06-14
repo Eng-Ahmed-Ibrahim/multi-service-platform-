@@ -1,0 +1,6 @@
+cd  /home/7rkbtop/public_html
+ssh 7rkbtop@88.198.132.87
+
+
+wFGeCTiJoOo2
+php artisan route:clear && php artisan cache:clear && php artisan config:clear && php artisan view:clear
