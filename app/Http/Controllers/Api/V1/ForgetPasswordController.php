@@ -47,7 +47,7 @@ class ForgetPasswordController extends Controller
         ]);
     
         if ($validator->fails()) {
-            return $this->Response($validator->errors(), "Validation Error", 422);
+            return $this->  Response($validator->errors(), "Validation Error", 422);
         }
     
         $user = User::where('phone', $request->phone)->first();

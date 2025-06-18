@@ -22,6 +22,38 @@ use App\Http\Controllers\Api\ResponseTrait;
 class RequestsController extends Controller
 {
     use ResponseTrait;
+        public function requests(Request $request)
+    {
+
+
+        $scheduleRequest = Helpers::getScheduledRequest($request->user());
+        if (! empty($scheduleRequest)) {
+            $data = [
+                "is_scheduled" => 1,
+                "requests" => array($scheduleRequest),
+            ];
+            return $this->Response($data, "You Have A Schedule Request , Be Ready", 201);
+        }
+        $query = Requests::query();
+        if ($request->user()->role == "driver")
+            $query->where("type", "trip");
+        $UsersRequests = $query->with(["user"])
+            ->whereIn("status", ["pending", "accepted"])
+            ->where(function ($q) use ($request) {
+                $q->whereNull("required_gender")
+                    ->orWhere("required_gender", $request->user()->gender);
+            })
+            ->where("user_id", $request->user()->id  )
+            
+            ->with(['service:id,name,name_ar,image'])
+            ->orderBy("id", 'DESC')
+            ->get();
+        $data = [
+            "is_scheduled" => 0,
+            "requests" => $UsersRequests,
+        ];
+        return $this->Response($data, __('messages.Requests'), 201);
+    }
     public function get_all_offers(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -201,36 +233,7 @@ class RequestsController extends Controller
         }
     }
 
-    public function requests(Request $request)
-    {
 
-
-        $scheduleRequest = Helpers::getScheduledRequest($request->user());
-        if (! empty($scheduleRequest)) {
-            $data = [
-                "is_scheduled" => 1,
-                "requests" => array($scheduleRequest),
-            ];
-            return $this->Response($data, "You Have A Schedule Request , Be Ready", 201);
-        }
-        $query = Requests::query();
-        if ($request->user()->role == "driver")
-            $query->where("type", "trip");
-        $UsersRequests = $query->with(["user"])
-            ->whereIn("status", ["pending", "accepted"])
-            ->where(function ($q) use ($request) {
-                $q->whereNull("required_gender")
-                    ->orWhere("required_gender", $request->user()->gender);
-            })
-            ->with(['service:id,name,name_ar,image'])
-            ->orderBy("id", 'DESC')
-            ->get();
-        $data = [
-            "is_scheduled" => 0,
-            "requests" => $UsersRequests,
-        ];
-        return $this->Response($data, __('messages.Requests'), 201);
-    }
 
     public function nearest_drivers(Request $request)
     {
