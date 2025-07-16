@@ -141,4 +141,46 @@ class RequestService
         }
         return $finalRequests;
     }
+    public  function getScheduledRequest($account)
+    {
+        $now = Carbon::now('Africa/Cairo');
+        $today = $now->format('m/d/Y');
+        $currentTime = $now->format('H:i');
+        $oneHourAgo = $now->copy()->subHour()->format('H:i');
+        $oneHourLater = $now->copy()->addHour()->format('H:i');
+        $query = Requests::query();
+        if (get_class($account) === "App\Modeles\User") {
+            $query->where('user_id', $account->id);
+        } else {
+            $query->where('provider_id', $account->id);
+        }
+        $scheduledRequests = $query->where('date', $today)
+            ->with(['user', 'service'])
+            ->get();
+
+        foreach ($scheduledRequests as $scheduledRequest) {
+            $requestTime = Carbon::parse($scheduledRequest->time)->format('H:i');
+            if ($requestTime >= $oneHourAgo && $requestTime <= $oneHourLater) {
+                return $scheduledRequest;
+            }
+        }
+        return [];
+    }
+    public function get_user_request($user)
+    {
+        $query = Requests::query();
+        if ($user->role == "driver")
+            $query->where("type", "trip");
+        $UsersRequests = $query->with(["user"])
+            ->where("user_id", $user->id)
+            ->whereIn("status", ["pending", "accepted"])
+            ->where(function ($q) use ($user) {
+                $q->whereNull("required_gender")
+                    ->orWhere("required_gender", $user->gender);
+            })
+            ->with(['service:id,name,name_ar,image'])
+            ->orderBy("id", 'DESC')
+            ->get();
+        return $UsersRequests;
+    }
 }

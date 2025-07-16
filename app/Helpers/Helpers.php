@@ -87,9 +87,9 @@ class Helpers
             $fcm = $item->token;
     
             // Retrieve the credentials for Firebase
-            $credentialsFilePath = Http::get(asset('json/homeandcar-c3577-f16e306f717a.json')); // in server
-            $client = new GoogleClient();
-            $client->setAuthConfig($credentialsFilePath);
+            // $credentialsFilePath = Http::get(storage_path('app/json/homeandcar-c3577-92c504bf8a39.json')); // in server
+            $client = new \Google\Client();
+            $client->setAuthConfig(storage_path('app/json/homeandcar-c3577-92c504bf8a39.json'));
             $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
             $client->refreshTokenWithAssertion();
             $token = $client->getAccessToken();

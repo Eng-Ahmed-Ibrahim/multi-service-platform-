@@ -11,6 +11,8 @@ use App\Models\ChatRooms;
 use App\Models\FcmTokens;
 use App\Events\RequestEvent;
 use Illuminate\Http\Request;
+use App\Services\OfferService;
+use App\Services\CouponService;
 use App\Events\OfferStatusEvent;
 use App\Services\RequestService;
 use Illuminate\Support\Facades\DB;
@@ -24,13 +26,19 @@ class RequestsController extends Controller
 {
     use ResponseTrait;
     private $requestService;
-    function __construct(RequestService $requestService)
+    private $OfferService;
+    private $CouponService;
+    function __construct(RequestService $requestService ,
+     OfferService $OfferService, CouponService $CouponService)
     {
         $this->requestService = $requestService;
+        $this->OfferService = $OfferService;
+        $this->CouponService = $CouponService;
     }
     public function requests(Request $request)
     {
-        $scheduleRequest = Helpers::getScheduledRequest($request->user());
+        $user=$request->user();
+        $scheduleRequest = $this->requestService->getScheduledRequest($user);
         if (! empty($scheduleRequest)) {
             $data = [
                 "is_scheduled" => 1,
@@ -38,20 +46,7 @@ class RequestsController extends Controller
             ];
             return $this->Response($data, "You Have A Schedule Request , Be Ready", 201);
         }
-        $query = Requests::query();
-        if ($request->user()->role == "driver")
-            $query->where("type", "trip");
-        $UsersRequests = $query->with(["user"])
-            ->whereIn("status", ["pending", "accepted"])
-            ->where(function ($q) use ($request) {
-                $q->whereNull("required_gender")
-                    ->orWhere("required_gender", $request->user()->gender);
-            })
-            ->where("user_id", $request->user()->id)
-
-            ->with(['service:id,name,name_ar,image'])
-            ->orderBy("id", 'DESC')
-            ->get();
+        $UsersRequests = $this->requestService->get_user_request($user);
         $data = [
             "is_scheduled" => 0,
             "requests" => $UsersRequests,
@@ -65,25 +60,8 @@ class RequestsController extends Controller
         ]);
         if ($validator->fails())
             return $this->Response($validator->errors(), "Validation Error", 422);
-        $offers = Offers::with('provider', 'request.service')->orderBy('id', 'desc')->where("request_id", $request->request_id)->get()->groupBy('provider_id');
-        $result = $offers->map(function ($offerGroup, $providerId) {
-            $provider = $offerGroup->first()->provider;
-            $provider["rating"] = 0;
-
-            $last_offer = $offerGroup->first();
-            $service = [
-                "id" => $offerGroup[0]['request']['service']["id"],
-                "name" => $offerGroup[0]['request']['service']["name"],
-                "name_ar" => $offerGroup[0]['request']['service']["name_ar"],
-                "image" => $offerGroup[0]['request']['service']["image"],
-            ];
-            return [
-                "id" => $offerGroup->first()->id,
-                'provider' => $provider,
-                'service' => $service,
-                'last_offer_price' => number_format($last_offer->proposed_price, 2),  // Format the last offer price
-            ];
-        })->values()->toArray();
+        
+        $result = $this->OfferService->get_user_offers($request->request_id);
         return $this->Response($result, "Offers", 201);
     }
 
@@ -123,54 +101,8 @@ class RequestsController extends Controller
         }
         $user = $request->user();
         $offer_id = $request->input("offer_id");
-        try {
-            list($offer, $ride_request) = Helpers::fetchNegotiationWithValidation($offer_id, 'user', $user);
-            $final_price = $offer->proposed_price;
-            $discount_value = 0;
-            if ($ride_request->coupon) {
-                $after_apply_coupon = Helpers::apply_coupon($ride_request->coupon, $offer->proposed_price);
-                if (is_array($after_apply_coupon)) {
-                    $final_price = $after_apply_coupon["final_price"];
-                    $discount_value = $after_apply_coupon["discount_value"];
-                    $coupon_id = $after_apply_coupon["coupon_id"];
-                    $admin_profit = $after_apply_coupon["admin_profit"];
-                } else {
-                    return $after_apply_coupon;
-                }
-            } else {
-                $admin_profit = adminProfit($final_price);
-            }
-            $ride_request->update([
-                "provider_id" => $offer->provider_id,
-                "accepted_price" => $final_price,
-                "discount" => $discount_value,
-                "coupon_id" => $coupon_id ?? null,
-                "admin_profit" => $admin_profit ?? null,
-                "status" => "accepted",
-
-            ]);
-            $ride_request->offers()->where("id", "!=", $offer->id)->update(["status" => "rejected",]);
-            $offer->update(["status" => "accepted",]);
-            broadcast(new OfferStatusEvent($offer));
-            $data = [
-                "user" => $offer->provider,
-                "title" => "User Accepted Your Offer",
-                "description" => "Your request has been accepted by " . $ride_request->user->name,
-                "model_type" => "accept_offer",
-                "model_id" => $ride_request->id
-            ];
-            $user = $data['user'];
-            Helpers::push_notification($data);
-
-            ChatRooms::firstOrCreate([
-                "request_id" => $ride_request->id,
-                "provider_id" => $offer->provider_id,
-                "user_id" => $request->user()->id,
-            ]);
-            return $this->Response($offer, __("messages.The_offer_has_been_accepted_successfully"), 201);
-        } catch (\Exception $e) {
-            return $this->Response(null, $e->getMessage(), $e->getCode());
-        }
+        $offer = $this->OfferService->accept_offer($offer_id , $user);
+        return $this->Response($offer , "Accepted Offer Successfully", 201);
     }
 
     public function rejected_offer(Request $request)
@@ -183,29 +115,8 @@ class RequestsController extends Controller
         }
         $user = $request->user();
         $offer_id = $request->input("offer_id");
-        try {
-            list($offer, $ride_request) = Helpers::fetchNegotiationWithValidation($offer_id, 'user', $user);
-            $offer->update([
-                "status" => "rejected"
-            ]);
-            broadcast(new OfferStatusEvent($offer));
-
-            $data = [
-                "user" => $offer->provider,
-                "title" => "User Rejected Your Offer",
-                "description" => "Your request has been rejected by " . $ride_request->user->name,
-                "model_type" => "rejected_offer",
-                "model_id" => $ride_request->id
-            ];
-
-            Helpers::push_notification($data);
-
-
-
-            return $this->Response($offer, __("messages.The_offer_has_been_rejected_successfully1"), 201);
-        } catch (\Exception $e) {
-            return $this->Response(null, $e->getMessage(), $e->getCode());
-        }
+        $offer = $this->OfferService->rejected_offer($offer_id , $user);
+        return $this->Response($offer, __("messages.The_offer_has_been_rejected_successfully1"), 201);
     }
 
     public function nearest_drivers(Request $request)
