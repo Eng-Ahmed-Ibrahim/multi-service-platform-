@@ -12,7 +12,6 @@ use App\Models\FcmTokens;
 use App\Events\RequestEvent;
 use Illuminate\Http\Request;
 use App\Events\OfferStatusEvent;
-use App\Services\RequestService;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
@@ -23,13 +22,10 @@ use App\Http\Controllers\Api\ResponseTrait;
 class RequestsController extends Controller
 {
     use ResponseTrait;
-    private $requestService;
-    function __construct(RequestService $requestService)
+        public function requests(Request $request)
     {
-        $this->requestService = $requestService;
-    }
-    public function requests(Request $request)
-    {
+
+
         $scheduleRequest = Helpers::getScheduledRequest($request->user());
         if (! empty($scheduleRequest)) {
             $data = [
@@ -47,8 +43,8 @@ class RequestsController extends Controller
                 $q->whereNull("required_gender")
                     ->orWhere("required_gender", $request->user()->gender);
             })
-            ->where("user_id", $request->user()->id)
-
+            ->where("user_id", $request->user()->id  )
+            
             ->with(['service:id,name,name_ar,image'])
             ->orderBy("id", 'DESC')
             ->get();
@@ -109,7 +105,36 @@ class RequestsController extends Controller
             return $this->Response($validated->errors()->keys(), __('messages.Data_not_valid'), 422);
 
         $validatedData = $validated->validated();
-        $rideRequest = $this->requestService->add_request($validatedData, $request);
+
+        if ($request->filled("coupon_code")) {
+            $validator = Validator::make($request->all(), [
+                'coupon_code' => 'required|exists:coupons,coupon_code',
+            ]);
+            if ($validator->fails())
+                return $this->Response($validator->errors()->keys(), __('messages.Data_not_valid'), 422);
+            $coupon = Coupon::where("coupon_code", $request->coupon_code)->first();
+            if (Carbon::now()->gt(Carbon::parse($coupon->end_at))) {
+                return $this->Response(null, 'Coupon has expired', 422);
+            }
+            $validatedData["coupon_id"] = $coupon->id;
+        }
+
+
+        $validatedData["required_gender"] = $request->gender;
+
+        unset($validatedData['gender']);
+        $validatedData["dropoff_lat"] = $request->type == 'trip' ? $request->dropoff_lat : null;
+        $validatedData["dropoff_lng"] = $request->type == 'trip' ? $request->dropoff_lng : null;
+        $validatedData["user_id"] = $request->user()->id;
+        $validatedData["attachment"] = ($request->hasFile('attachment')) ? Helpers::upload_files($request->attachment, '/uploads/requests/') : null;
+        $rideRequest = Requests::create($validatedData);
+
+        $nearest_drivers = Helpers::get_nearest_drivers($request->pickup_lat, $request->pickup_lng);
+        foreach ($nearest_drivers as $driver) {
+            $channel = $request->type == 'trip' ?  "drivers" : "handymans";
+            broadcast(new RequestEvent($rideRequest,$driver["id"], $channel))->toOthers();
+        }
+
         return $this->Response($rideRequest, __("messages.Request_created_successfully"), 201);
     }
 
@@ -207,6 +232,8 @@ class RequestsController extends Controller
             return $this->Response(null, $e->getMessage(), $e->getCode());
         }
     }
+
+
 
     public function nearest_drivers(Request $request)
     {

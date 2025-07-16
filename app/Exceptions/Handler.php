@@ -2,8 +2,9 @@
 
 namespace App\Exceptions;
 
-use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
+use App\Exceptions\CustomValidationException;
+use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 
 class Handler extends ExceptionHandler
 {
@@ -21,10 +22,17 @@ class Handler extends ExceptionHandler
     /**
      * Register the exception handling callbacks for the application.
      */
-    public function register(): void
-    {
-        $this->reportable(function (Throwable $e) {
-            //
-        });
+
+public function render($request, Throwable $exception)
+{
+    if ($exception instanceof CustomValidationException) {
+        return response()->json([
+            'status' => $exception->getStatusCode(),
+            'msg' => $exception->getMessage(),
+            'data' => null,
+        ], $exception->getStatusCode());
     }
+
+    return parent::render($request, $exception);
+}
 }

@@ -30,18 +30,16 @@ class AuthController extends Controller
 
         $user = User::where("phone", $request->phone)->first();
 
-        AddNewFcmService::addFcm($user,$request->fcm_token,$request->device_id);
         if ( ! $user || ! Hash::check($request->password, $user->password)) {
             return $this->Response("Incorrect phone or password", "Incorrect phone or password", 401);
         }
+        AddNewFcmService::addFcm($user,$request->fcm_token,$request->device_id);
 
         $token = $user->createToken('User Token')->plainTextToken;
-
         $data = [
             "user" => $user,
             "token" => $token,
         ];
-
         $verificationResponse = CheckAccountVerifiedService::checkVerificationStatus($user,$token,403);
         if ($verificationResponse) {
             return $verificationResponse;

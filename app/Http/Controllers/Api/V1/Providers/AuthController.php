@@ -37,11 +37,11 @@ class AuthController extends Controller
         
 
         $user = Providers::where("phone", $request->phone)->first();
-        AddNewFcmService::addFcm($user,$request->fcm_token,$request->device_id);
-
+        
         if (! $user || ! Hash::check($request->password, $user->password)) {
             return $this->Response("Incorrect phone or password", "Incorrect phone or password", 401);
         }
+        AddNewFcmService::addFcm($user,$request->fcm_token,$request->device_id);
         $token = $user->createToken('Driver Token')->plainTextToken;
         $data = [
             "user" => $user,
