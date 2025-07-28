@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Api\V1\Users;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Api\ResponseTrait;
 use App\Models\Reviews;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Api\ResponseTrait;
 class ReviewsController extends Controller
 {
     use ResponseTrait;
@@ -17,7 +17,7 @@ class ReviewsController extends Controller
             'rating' => 'required|numeric|between:1,5',
         ]);
         if($validator->fails()){
-            return $this->Response($validator->errors()->first(),"Validation Error",422);
+            return $this->Response($validator->errors()->first(),__("messages.Validation Error"),422);
         }
         Reviews::create([
             "user_id"=>auth()->user()->id,
@@ -25,7 +25,7 @@ class ReviewsController extends Controller
             "rating"=>$request->rating,
             "message"=>$request->message,
         ]);
-        return $this->Response("Review Added Successfully","Review Added Successfully",200);
+        return $this->Response(__("messages.Review Added Successfully"),__("messages.Review Added Successfully"),200);
 
 
 

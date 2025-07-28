@@ -8,6 +8,7 @@ use App\Helpers\Helpers;
 use App\Models\Documents;
 use App\Models\Processes;
 use App\Models\Providers;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\ProviderService;
 use App\Services\AddNewFcmService;
@@ -35,8 +36,12 @@ class AuthController extends Controller
             return $this->Response($validator->errors()->keys(), "Validation Error", 422);
         }
         
+        $phone = $request->phone;
 
-        $user = Providers::where("phone", $request->phone)->first();
+        if (!Str::startsWith($phone, '+')) {
+            $phone = '+' . $phone;
+        }
+        $user = Providers::where("phone", $phone)->first();
         
         if (! $user || ! Hash::check($request->password, $user->password)) {
             return $this->Response("Incorrect phone or password", "Incorrect phone or password", 401);
@@ -51,7 +56,7 @@ class AuthController extends Controller
         if ($verificationResponse) {
             return $verificationResponse;
         }
-        return $this->Response($data, "Login Successfully", 200);
+        return $this->Response($data, __("messages.Login Successfully"), 200);
     }
 
 
@@ -196,11 +201,11 @@ class AuthController extends Controller
             if ($verificationResponse) {
                 return $verificationResponse; // لو الحساب غير مفعل، يرجع رسالة الخطأ
             }
-            return $this->Response($data, "Registered Successfully", 201);
+            return $this->Response($data, __("messages.Registered Successfully"), 201);
     
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->Response($e->getMessage(), "Registration Failed", 500);
+            return $this->Response($e->getMessage(), __("messages.Registration Failed"), 500);
         }
     }
 
@@ -228,7 +233,7 @@ class AuthController extends Controller
         ]);
     
         if ($validator->fails()) {
-            return $this->Response($validator->errors()->keys(), "Validation Error", 422);
+            return $this->Response($validator->errors()->keys(), __("messages.Validation Error"), 422);
         }
     
         DB::beginTransaction();
@@ -313,12 +318,12 @@ class AuthController extends Controller
             if ($verificationResponse) {
                 return $verificationResponse; // لو الحساب غير مفعل، يرجع رسالة الخطأ
             }
-            return $this->Response($data, "Registered Successfully", 201);
+            return $this->Response($data, __("messages.Registered Successfully"), 201);
 
     
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->Response($e->getMessage(), "Registration Failed", 500);
+            return $this->Response($e->getMessage(), __("messages.Registration Failed"), 500);
         }
     }
     
@@ -327,7 +332,7 @@ class AuthController extends Controller
     {
         $request->user()->tokens()->delete();
 
-        return $this->Response(null, "Logged Out Successfully", 200);
+        return $this->Response(null, __("messages.Logged Out Successfully"), 200);
     }
  
     

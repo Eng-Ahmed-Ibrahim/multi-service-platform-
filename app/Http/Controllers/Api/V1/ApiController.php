@@ -30,7 +30,7 @@ class ApiController extends Controller
             "cancelation_reason_id" => "required"
         ]);
         if ($validator->fails())
-            return $this->Response($validator->errors()->first(), "Validation Error", 422);
+            return $this->Response($validator->errors()->first(), __("messages.Validation Error"), 422);
         $CuRequest = Requests::find($request->request_id);
         if (!$CuRequest)
             return $this->Response(null, "Request not found", "Request not found", 404);
@@ -62,7 +62,7 @@ class ApiController extends Controller
             "request_id" => "required|exists:requests,id"
         ]);
         if ($validator->fails())
-            return $this->Response($validator->errors()->first(), "Validation Error", 422);
+            return $this->Response($validator->errors()->first(), __("messages.Validation Error"), 422);
         $details = Requests::where("id", $request->request_id)
             ->with(['user', 'provider', 'service'])->first();
         if(!$details)
@@ -91,6 +91,8 @@ class ApiController extends Controller
         else
             $query->where("provider_id", $request->user()->id)->with(["user"]);
 
+        if($request->filled("type"))
+            $query->where('type',$request->type);
         $history = $query
             ->whereIn("status", ["cancelled", "completed"])
             ->orderBy("id", 'DESC')
@@ -115,7 +117,7 @@ class ApiController extends Controller
             "provider_id"=>"required|exists:providers,id",
         ]);
         if($validator->fails())
-            return $this->Response($validator->errors(),"Validation Error",422);
+            return $this->Response($validator->errors(),__("messages.Validation Error"),422);
         $reviews = Reviews::where('provider_id', $request->provider_id)->get();
 
         $averageRating = $reviews->avg('rating');
@@ -139,7 +141,7 @@ class ApiController extends Controller
             "device_id" => "required",
         ]);
         if ($validator->fails())
-            return $this->Response($validator->errors()->first(), "Validation Error", 422);
+            return $this->Response($validator->errors()->first(), __("messages.Validation Error"), 422);
         $fcms=FcmTokens::where("device_id",$request->device_id)
         ->where("account_id",$request->user()->id)
         ->where("account_type",get_class($request->user()))
@@ -151,6 +153,6 @@ class ApiController extends Controller
         }
         $request->user()->tokens()->delete();
 
-        return $this->Response(null, "Logged Out Successfully", 200);
+        return $this->Response(null, __("messages.Logged Out Successfully"), 200);
     }
 }

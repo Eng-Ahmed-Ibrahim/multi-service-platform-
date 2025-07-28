@@ -25,7 +25,7 @@
 				<!--begin::Menu-->
 				<div class="menu menu-rounded menu-column menu-lg-row my-5 my-lg-0 align-items-stretch fw-semibold px-2 px-lg-0" id="kt_app_header_menu" data-kt-menu="true">
 					<!--begin:Menu item-->
-					<a class="menu-item {{ request()->path() =='admin' ?'show' :' ' }}  menu-here-bg menu-lg-down-accordion me-0 me-lg-2">
+					<a href="{{route('admin.dashboard')}}" class="menu-item {{ request()->path() =='admin' ?'show' :' ' }}  menu-here-bg menu-lg-down-accordion me-0 me-lg-2">
 						<!--begin:Menu link-->
 						<span class="menu-link">
 							<span class="menu-title">{{__('messages.Dashboard')}}</span>

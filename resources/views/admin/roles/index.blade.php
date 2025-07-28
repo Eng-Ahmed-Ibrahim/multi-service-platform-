@@ -34,15 +34,17 @@
 						<table class="table align-middle gs-0 gy-4">
 							<thead>
 								<tr class="fw-bold text-muted bg-light">
-									<th class="ps-4 min-w-300px rounded-start">{{__('messages.Name')}}</th>
+									<th class="ps-4 min-w-125px rounded-start">#</th>
+									<th class="ps-4 min-w-125px">{{__('messages.Name')}}</th>
 									<th class="min-w-125px text-center">{{__('messages.Actions')}}</th>
 
 								</tr>
 							</thead>
 							<tbody>
-								@foreach($roles as $role)
+								@foreach($roles as $index=> $role)
 								<tr>
 
+									<td>#{{ $index + 1 }}</td>
 									<td>{{$role->name}}</td>
 									<td class="text-center">
 										<a href="{{route('admin.roles.edit',$role->id)}}" class="btn btn-bg-light btn-color-muted btn-active-color-primary btn-sm px-4">{{__('messages.Edit')}}</a>
@@ -170,7 +172,6 @@
 						</div>
 						<!--begin::Actions-->
 						<div class="text-center pt-15">
-							<button type="reset" class="btn btn-light me-3" data-kt-roles-modal-action="cancel">{{__('messages.Retreat')}}</button>
 							<button type="submit" class="btn btn-primary" data-kt-roles-modal-action="submit">
 								<span class="indicator-label">{{__('messages.Save')}}</span>
 								<span class="indicator-progress">{{__('messages.Please_wait...')}} <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>

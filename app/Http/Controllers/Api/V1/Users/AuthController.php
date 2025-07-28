@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api\V1\Users;
 
 use Carbon\Carbon;
 use App\Models\User;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Services\AddNewFcmService;
 use App\Http\Controllers\Controller;
@@ -25,13 +26,17 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->Response($validator->errors()->keys(), "Validation Error", 422);
+            return $this->Response($validator->errors()->keys(), __("messages.Validation Error"), 422);
         }
+        $phone = $request->phone;
 
-        $user = User::where("phone", $request->phone)->first();
+        if (!Str::startsWith($phone, '+')) {
+            $phone = '+' . $phone;
+        }
+        $user = User::where("phone", $phone)->first();
 
         if ( ! $user || ! Hash::check($request->password, $user->password)) {
-            return $this->Response("Incorrect phone or password", "Incorrect phone or password", 401);
+            return $this->Response(__("messages.Incorrect phone or password"), __("messages.Incorrect phone or password"), 401);
         }
         AddNewFcmService::addFcm($user,$request->fcm_token,$request->device_id);
 
@@ -45,7 +50,7 @@ class AuthController extends Controller
             return $verificationResponse;
         }
 
-        return $this->Response($data, "Login Successfully", 200);
+        return $this->Response($data, __("messages.Login Successfully"), 200);
     }
 
     public function register(Request $request)
@@ -70,7 +75,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->Response($validator->errors(), "Validation Error", 422);
+            return $this->Response($validator->errors(), __("messages.Validation Error"), 422);
         }
         $dateOfBirth = Carbon::createFromFormat('m/d/Y', $request->date_of_birth)->format('Y-m-d');
 
@@ -97,13 +102,13 @@ class AuthController extends Controller
         if ($verificationResponse) {
             return $verificationResponse;
         }
-        return $this->Response($data, "Registered Successfully", 201);
+        return $this->Response($data, __("messages.Registered Successfully"), 201);
     }
 
     public function logout(Request $request)
     {
         $request->user()->tokens()->delete();
 
-        return $this->Response(null, "Logged Out Successfully", 200);
+        return $this->Response(null, __("messages.Logged Out Successfully"), 200);
     }
 }

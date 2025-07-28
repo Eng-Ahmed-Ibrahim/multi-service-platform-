@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\BrandsController;
 use App\Http\Controllers\Admin\ModelsController;
 use App\Http\Controllers\Admin\CouponsController;
 use App\Http\Controllers\Admin\DriversController;
+use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\HandymanController;
 use App\Http\Controllers\Admin\RequestsController;
 use App\Http\Controllers\Admin\ServicesController;
@@ -17,7 +18,6 @@ use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\BusinessSettingController;
 use App\Http\Controllers\Admin\DriversServicesController;
 use App\Http\Controllers\Admin\HandymanServicesController;
-use App\Http\Controllers\Admin\ProfileController;
 
 
 
@@ -51,11 +51,12 @@ use App\Http\Controllers\Admin\ProfileController;
 
         Route::get("/drivers",[DriversController::class,"index"])->middleware('can:view drivers')->name("drivers.index");
         Route::get("/drivers/create",[DriversController::class,"create"])->middleware('can:create drivers')->name("drivers.create");
+        Route::get("/drivers/edit/{id}",[DriversController::class,"edit"])->middleware('can:update drivers')->name("drivers.edit");
         Route::get("/drivers/{driver_id}",[DriversController::class,"show"])->middleware('can:view drivers')->name("drivers.show");
         Route::post("/drivers/add-driver",[DriversController::class,"store"])->middleware('can:create drivers')->name("drivers.store");
         Route::post("/drivers/accepted-driver/{driver_id}",[DriversController::class,"accept_driver"])->middleware('can:view drivers')->name("drivers.accept_driver");
         Route::post("/drivers/rejected-driver/{driver_id}",[DriversController::class,"reject_driver"])->middleware('can:view drivers')->name("drivers.reject_driver");
-        Route::post("/drivers/update-driver",[DriversController::class,"update"])->middleware('can:update drivers')->name("drivers.update");
+        Route::put("/drivers/update-driver/{id}",[DriversController::class,"update"])->middleware('can:update drivers')->name("drivers.update");
         Route::post("/drivers/delete-driver/{driver_id}",[DriversController::class,"delete"])->middleware('can:delete drivers')->name("drivers.delete");
         Route::post('/drivers/change-status',[DriversController::class,"change_process_status"])->middleware('can:view drivers')->name("drivers.change_process_status");
         
@@ -72,7 +73,7 @@ use App\Http\Controllers\Admin\ProfileController;
                 Route::get("/{section}", "index")->name("index");
                 Route::post("/add-service", "store")->name("store");
                 Route::post("/update-service", "update")->name("update");
-                Route::post("/delete-service", "delete")->name("delete");
+                Route::delete("/delete-service/{service_id}", "delete")->name("delete");
                 Route::post("/update-status", "update_status")->name("update_status");
             });
         
@@ -99,8 +100,8 @@ use App\Http\Controllers\Admin\ProfileController;
             Route::controller(NotificationController::class)->group(function () {
                 Route::get("/", "index")->name("index");
                 Route::post("/add-notification", "store")->name("store");
-                Route::post("/update-notification", "update")->name("update");
-                Route::post("/delete-notification", "delete")->name("delete");
+                Route::put("/update-notification", "update")->name("update");
+                Route::delete("/delete-notification/{id}", "delete")->name("delete");
             });
         });
         Route::prefix("coupons")->name('coupons.')->group(function () {

@@ -29,7 +29,7 @@ class SettingsController extends Controller
             "policy_ar" => $settings[$keys[3]] ?? null,
         ];
         
-        return $this->Response($data, "Privacy and Policy Fetched Successfully", 200);
+        return $this->Response($data, __("messages.Privacy and Policy Fetched Successfully"), 200);
         
     }
 }

@@ -21,8 +21,8 @@ class CouponsController extends Controller
             [
                 "coupon_code" => 'required',
                 "coupon_value" => 'required',
-                "start_at" => 'required',
-                "end_at" => 'required',
+                "start_at" => 'required|date',
+                "end_at" => 'required|date|after:start_at',
                 "type" => 'required',
             ],
             [
@@ -33,14 +33,14 @@ class CouponsController extends Controller
                 "type.required" => __('messages.Validate_commission_value'),
             ]
         );
-        if($request->type=="percentage" && $request->coupon_value > 100 || $request->coupon_value < 0){
-            session()->flash("error",__("messages.Coupon_0_100"));
+        if ($request->type == "percentage" && $request->coupon_value > 100 || $request->coupon_value < 0) {
+            session()->flash("error", __("messages.Coupon_0_100"));
             return back();
         }
         $startAt = Carbon::createFromFormat('Y-m-d', $request->start_at)->format('m/d/Y');
         $endAt = Carbon::createFromFormat('Y-m-d', $request->end_at)->format('m/d/Y');
-        if($endAt < $startAt){
-            session()->flash("error",__("messages.Start_at_after_end_at"));
+        if ($endAt < $startAt) {
+            session()->flash("error", __("messages.Start_at_after_end_at"));
             return back();
         }
         Coupon::create([
@@ -60,8 +60,8 @@ class CouponsController extends Controller
                 "id" => "required",
                 "coupon_code" => 'required',
                 "coupon_value" => 'required',
-                "start_at" => 'required',
-                "end_at" => 'required',
+                "start_at" => 'required|date',
+                "end_at" => 'required|date|after:start_at',
                 "type" => 'required',
             ],
             [
@@ -72,8 +72,8 @@ class CouponsController extends Controller
                 "type.required" => __('messages.Validate_commission_value'),
             ]
         );
-        if($request->type=="percentage" && $request->coupon_value > 100 || $request->coupon_value < 0){
-            session()->flash("error",__("messages.Coupon_0_100"));
+        if ($request->type == "percentage" && $request->coupon_value > 100 || $request->coupon_value < 0) {
+            session()->flash("error", __("messages.Coupon_0_100"));
             return back();
         }
         $commission = Coupon::find($request->id);

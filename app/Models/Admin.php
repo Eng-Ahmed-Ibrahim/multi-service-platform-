@@ -8,13 +8,12 @@ use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Admin extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
-    use HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
 
     /**

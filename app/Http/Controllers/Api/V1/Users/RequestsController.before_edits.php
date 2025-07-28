@@ -32,7 +32,7 @@ class RequestsController extends Controller
                 "is_scheduled" => 1,
                 "requests" => array($scheduleRequest),
             ];
-            return $this->Response($data, "You Have A Schedule Request , Be Ready", 201);
+            return $this->Response($data, __("messages.You Have A Schedule Request , Be Ready"), 201);
         }
         $query = Requests::query();
         if ($request->user()->role == "driver")
@@ -60,7 +60,7 @@ class RequestsController extends Controller
             "request_id" => "required|exists:requests,id",
         ]);
         if ($validator->fails())
-            return $this->Response($validator->errors(), "Validation Error", 422);
+            return $this->Response($validator->errors(), __("messages.Validation Error"), 422);
         $offers = Offers::with('provider', 'request.service')->orderBy('id', 'desc')->where("request_id", $request->request_id)->get()->groupBy('provider_id');
         $result = $offers->map(function ($offerGroup, $providerId) {
             $provider = $offerGroup->first()->provider;
@@ -144,7 +144,7 @@ class RequestsController extends Controller
             'offer_id' => 'required|exists:offers,id',
         ]);
         if ($validator->fails()) {
-            return $this->Response($validator->errors()->keys(), "Validation Error", 422);
+            return $this->Response($validator->errors()->keys(), __("messages.Validation Error"), 422);
         }
         $user = $request->user();
         $offer_id = $request->input("offer_id");
@@ -204,7 +204,7 @@ class RequestsController extends Controller
             'offer_id' => 'required|exists:offers,id',
         ]);
         if ($validator->fails()) {
-            return $this->Response($validator->errors()->keys(), "Validation Error", 422);
+            return $this->Response($validator->errors()->keys(), __("messages.Validation Error"), 422);
         }
         $user = $request->user();
         $offer_id = $request->input("offer_id");

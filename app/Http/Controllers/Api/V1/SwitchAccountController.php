@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Models\User;
 use App\Models\Providers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Api\ResponseTrait;
-use App\Models\User;
 use App\Services\CheckAccountVerifiedService;
 
 class SwitchAccountController extends Controller
@@ -22,7 +22,7 @@ class SwitchAccountController extends Controller
 
             $user = Providers::find($account->provider_id);
             if (!$user) {
-                return $this->Response(null, "User account not found", 404);
+                return $this->Response(null, __("messages.User account not found"), 404);
             }
             $request->user()->currentAccessToken()->delete();
             $user->update([
@@ -39,7 +39,7 @@ class SwitchAccountController extends Controller
                 
             }
             
-            return $this->Response($data, "Switched Successfully", 200);
+            return $this->Response($data, __("messages.Switched Successfully"), 200);
         }elseif($type == "App\Models\Providers"){
             if($account->user_id != null){
                 $account->current_loggin=false;
@@ -58,7 +58,7 @@ class SwitchAccountController extends Controller
                     return $verificationResponse;
                 }
                 
-                return $this->Response($data, "Switched Successfully", 200);
+                return $this->Response($data, __("messages.Switched Successfully"), 200);
             }else{
                 
                 $user = User::create([
@@ -90,11 +90,11 @@ class SwitchAccountController extends Controller
                 // if ($verificationResponse) {
                 //     return $verificationResponse;
                 // }
-                return $this->Response($data, "Switched Successfully", 201);
+                return $this->Response($data, __("messages.Switched Successfully"), 201);
 
 
             }
         }
-        return $this->Response(null,"Something Wrong , try latter ",422);
+        return $this->Response(null,__("messages.Something Wrong , try latter"),422);
     }
 }

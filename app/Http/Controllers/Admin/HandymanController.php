@@ -65,6 +65,7 @@ class HandymanController extends Controller
             'password' => 'required|min:8',
             "address" => "required",
             'date_of_birth' => 'required|date|before:today',
+            "country_code"=>"required",
 
             "id_number" => "required",
             "gender" => "required",
@@ -87,7 +88,7 @@ class HandymanController extends Controller
                 "image" => Helpers::upload_files($request->photo, "/uploads/handymans/account_photos/"),
                 "role" => "handyman",
                 "email" => $request->email,
-                "phone" => $request->phone,
+                "phone" =>"+". $request->country_code . $request->phone,
                 "address" => $request->address,
                 "gender" => $request->gender,
                 "id_number" => $request->id_number,
@@ -172,6 +173,7 @@ class HandymanController extends Controller
             "name" => "required",
             "phone" => "required",
             "email" => "required",
+            
         ]);
         $handyman = Providers::where("role", "handyman")->find($request->handyman_id);
         if (! $handyman)

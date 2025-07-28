@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\Api\V1\Users\AuthController;
 use App\Http\Controllers\Api\V1\Users\ReviewsController;
 use App\Http\Controllers\Api\V1\Users\RequestsController;
+use App\Http\Controllers\Api\V1\Users\LocationsController;
 use App\Http\Controllers\Api\V1\Users\RequestHandymanController;
 
 Route::prefix('auth/')->group(function(){
@@ -16,7 +17,6 @@ Route::prefix('auth/')->group(function(){
 
 // api/v1/users/auth/register
 Route::middleware(['auth:sanctum','auth.user','is_verified'])->group(function(){
-
         Route::get('get-offers',[RequestsController::class,'get_all_offers']);
         Route::get('driver-offers',[RequestsController::class,'getTargetDriverOffers']);
         Route::post('create-request',[RequestsController::class,'create_request']);
@@ -27,5 +27,11 @@ Route::middleware(['auth:sanctum','auth.user','is_verified'])->group(function(){
 
         Route::get('nearest-drivers',[RequestsController::class,'nearest_drivers']);
 
+        Route::controller(LocationsController::class)->group(function(){
+            Route::get('locations',  'index');
+            Route::post('locations/store',  'store');
+            Route::post('locations/update/{id}',  'update');
+            Route::post('locations/delete/{id}',  'destroy');
+        });
 
 });

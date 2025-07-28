@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Models\Requests;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class RequestsController extends Controller
 {
@@ -17,9 +17,13 @@ class RequestsController extends Controller
         $this->middleware(['permission:delete users'])->only('destroy');
          $this->model_view_folder = 'admin.requests.';
     }
-    public function index($type){
+    public function index($type  , Request $request){
         $type=str_replace("-","_",$type);
-        $requests=Requests::where("type",$type)->orderBy("id","DESC")->paginate(15);
+        $requests=Requests::where("type",$type)->orderBy("id","DESC")
+        ->when($request->status,function ($q) use($request){
+            $q->where("status",$request->status);
+        })
+        ->paginate(15);
         return view($this->model_view_folder ."index")
         ->with("requests",$requests)
         ->with("section",$type)

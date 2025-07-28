@@ -44,7 +44,7 @@ class RequestsController extends Controller
                 "is_scheduled" => 1,
                 "requests" => array($scheduleRequest),
             ];
-            return $this->Response($data, "You Have A Schedule Request , Be Ready", 201);
+            return $this->Response($data, __("messages.You Have A Schedule Request , Be Ready"), 201);
         }
         $UsersRequests = $this->requestService->get_user_request($user);
         $data = [
@@ -59,7 +59,7 @@ class RequestsController extends Controller
             "request_id" => "required|exists:requests,id",
         ]);
         if ($validator->fails())
-            return $this->Response($validator->errors(), "Validation Error", 422);
+            return $this->Response($validator->errors(), __("messages.Validation Error"), 422);
         
         $result = $this->OfferService->get_user_offers($request->request_id);
         return $this->Response($result, "Offers", 201);
@@ -97,12 +97,12 @@ class RequestsController extends Controller
             'offer_id' => 'required|exists:offers,id',
         ]);
         if ($validator->fails()) {
-            return $this->Response($validator->errors()->keys(), "Validation Error", 422);
+            return $this->Response($validator->errors()->keys(), __("messages.Validation Error"), 422);
         }
         $user = $request->user();
         $offer_id = $request->input("offer_id");
         $offer = $this->OfferService->accept_offer($offer_id , $user);
-        return $this->Response($offer , "Accepted Offer Successfully", 201);
+        return $this->Response($offer , __("messages.Accepted Offer Successfully"), 201);
     }
 
     public function rejected_offer(Request $request)
@@ -111,12 +111,12 @@ class RequestsController extends Controller
             'offer_id' => 'required|exists:offers,id',
         ]);
         if ($validator->fails()) {
-            return $this->Response($validator->errors()->keys(), "Validation Error", 422);
+            return $this->Response($validator->errors()->keys(), __("messages.Validation Error"), 422);
         }
         $user = $request->user();
         $offer_id = $request->input("offer_id");
         $offer = $this->OfferService->rejected_offer($offer_id , $user);
-        return $this->Response($offer, __("messages.The_offer_has_been_rejected_successfully1"), 201);
+        return $this->Response($offer, __("messages.The_offer_has_been_rejected_successfully"), 201);
     }
 
     public function nearest_drivers(Request $request)
@@ -138,6 +138,6 @@ class RequestsController extends Controller
         $data = [
             "drivers" => $finalDrivers
         ];
-        return $this->Response($data, "Drivers", 201);
+        return $this->Response($data, __("messages.Drivers"), 201);
     }
 }

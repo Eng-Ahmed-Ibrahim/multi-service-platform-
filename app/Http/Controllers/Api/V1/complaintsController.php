@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
 use App\Models\Complaints;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class complaintsController extends Controller
 {
@@ -27,7 +27,7 @@ class complaintsController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Complaint submitted successfully',
+            'message' => __('messages.Complaint submitted successfully'),
             'complaint' => $complaint
         ], 201);
     }

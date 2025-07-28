@@ -32,7 +32,7 @@ class ProfileController extends Controller
             "image" => "nullable|image",
         ]);
         if ($vaidator->fails())
-            return $this->Response($vaidator->errors(), "Validation Error", 422);
+            return $this->Response($vaidator->errors(), __("messages.Validation Error"), 422);
         $user = $request->user();
         if ($request->hasFile("image")) {
             Helpers::delete_file($user->image);
@@ -54,7 +54,7 @@ class ProfileController extends Controller
             "image" => "required|image",
         ]);
         if ($vaidator->fails())
-            return $this->Response($vaidator->errors(), "Validation Error", 422);
+            return $this->Response($vaidator->errors(), __("messages.Validation Error"), 422);
         $user = $request->user();
         Helpers::delete_file($user->image);
         $user->image = Helpers::upload_files($request->image, "/uploads/drivers/account_photos/");
@@ -73,12 +73,12 @@ class ProfileController extends Controller
             "confirm_password" => "required|string|same:new_password",
         ]);
         if ($vaidator->fails())
-            return $this->Response($vaidator->errors(), "Validation Error", 422);
+            return $this->Response($vaidator->errors(), __("messages.Validation Error"), 422);
         $user = $request->user();
         if (! Hash::check($request->old_password, $user->password))
-            return $this->Response("Old Password is incorrect", "Validation Error", 422);
+            return $this->Response("Old Password is incorrect", __("messages.Validation Error"), 422);
         $user->password = Hash::make($request->new_password);
         $user->save();
-        return $this->Response("Password Changed Successfully", "Success", 200);
+        return $this->Response(__("messages.Password Changed Successfully"), "Success", 200);
     }
 }

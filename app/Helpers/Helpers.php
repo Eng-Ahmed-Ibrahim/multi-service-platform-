@@ -4,15 +4,19 @@ namespace App\Helpers;
 
 use Exception;
 use Carbon\Carbon;
+use App\Models\Brands;
 use App\Models\Coupon;
+use App\Models\Models;
 use App\Models\Offers;
 use App\Models\Requests;
+use App\Models\Services;
 use App\Models\FcmTokens;
 use App\Models\Notification;
 use Google\Client as GoogleClient;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Api\ResponseTrait;
 
 class Helpers
@@ -47,7 +51,7 @@ class Helpers
     }
     public static function fetchNegotiationWithValidation($offerId, $role, $user)
     {
-        $offer = Offers::with(['ride_request','provider'])->findOrFail($offerId);
+        $offer = Offers::with(['ride_request', 'provider'])->findOrFail($offerId);
         $rideRequest = $offer->ride_request;
         if ($rideRequest->status !== 'pending') {
             throw new Exception('Request not available', 403);
@@ -66,12 +70,12 @@ class Helpers
     public static function push_notification($data)
     {
         $user = $data['user'];
-    
+
         // Get the FCM tokens for the user
         $fcms = FcmTokens::where("account_id", $user->id)->where("account_type", get_class($user))->get();
         $data['fcms'] = $fcms;
         $data["trs"] = "Helpers";  // This line is not needed unless you're using it elsewhere
-    
+
         $title = $data['title'];
         $model_type = $data['model_type'];
         $model_id = $data['model_id'];
@@ -79,13 +83,13 @@ class Helpers
         $provider_id = $data['provider_id'] ?? null;
         $user_id = $data['user_id'] ?? null;
         $request_id = $data['request_id'] ?? null;
-    
+
         $results = [];  // To collect responses from each notification
-    
+
         // Loop through each FCM token and send the notification
         foreach ($fcms as $item) {
             $fcm = $item->token;
-    
+
             // Retrieve the credentials for Firebase
             // $credentialsFilePath = Http::get(storage_path('app/json/homeandcar-c3577-92c504bf8a39.json')); // in server
             $client = new \Google\Client();
@@ -93,15 +97,15 @@ class Helpers
             $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
             $client->refreshTokenWithAssertion();
             $token = $client->getAccessToken();
-    
+
             $access_token = $token['access_token'];
-    
+
             // Set the headers for Firebase Cloud Messaging (FCM)
             $headers = [
                 "Authorization: Bearer $access_token",
                 'Content-Type: application/json'
             ];
-    
+
             // Prepare the data payload for the notification
             $data = [
                 "message" => [
@@ -121,9 +125,9 @@ class Helpers
                     ],
                 ]
             ];
-    
+
             $payload = json_encode($data);
-    
+
             // Send the notification via cURL
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/v1/projects/homeandcar-c3577/messages:send');
@@ -136,7 +140,7 @@ class Helpers
             $response = curl_exec($ch);
             $err = curl_error($ch);
             curl_close($ch);
-    
+
             // Collect the response for each notification
             if ($err) {
                 $results[] = ['error' => 'Curl Error: ' . $err];
@@ -144,58 +148,60 @@ class Helpers
                 $results[] = ['response' => json_decode($response, true)];
             }
         }
-    
+
         // Return a response after sending all notifications
         // return response()->json([
         //     'message' => 'Notifications have been sent',
         //     'results' => $results
         // ], 200);
     }
-    
-    public static function apply_coupon($coupon,$price){
+
+    public static function apply_coupon($coupon, $price)
+    {
 
         if (Carbon::now()->gt(Carbon::parse($coupon->end_at))) {
             return response()->json(['message' => 'Coupon has expired'], 400);
         }
-        $discount_value=0;
-        $final_price=0;
+        $discount_value = 0;
+        $final_price = 0;
 
         // admin comission percentage
-        $max_commission_percentage= getBusinessSetting("profit_percentage") ;
+        $max_commission_percentage = getBusinessSetting("profit_percentage");
         // addmin comission amount
-        $max_commission_amount =   ($price * $max_commission_percentage )/100 ;
-        
-        if($coupon->type=="percentage"){
+        $max_commission_amount =   ($price * $max_commission_percentage) / 100;
+
+        if ($coupon->type == "percentage") {
             // check if coupon value bigger than comission to apply max value can user get discount
-            $coupon_value=$coupon->coupon_value <= $max_commission_percentage ? $coupon->coupon_value : $max_commission_percentage ;
-            $discount_value=($price * $coupon_value )/100;
-            $final_price= $price - $discount_value;
-        }elseif($coupon->type=="amount"){
-            $discount_value =  $coupon->coupon_value <= $max_commission_amount ? $coupon->coupon_value :  $max_commission_amount ;
-            $final_price= $price - $discount_value;
+            $coupon_value = $coupon->coupon_value <= $max_commission_percentage ? $coupon->coupon_value : $max_commission_percentage;
+            $discount_value = ($price * $coupon_value) / 100;
+            $final_price = $price - $discount_value;
+        } elseif ($coupon->type == "amount") {
+            $discount_value =  $coupon->coupon_value <= $max_commission_amount ? $coupon->coupon_value :  $max_commission_amount;
+            $final_price = $price - $discount_value;
         }
         return [
-            "final_price"=>$final_price,
-            "discount_value"=>  $discount_value,
-            "admin_profit"=> $max_commission_amount - $discount_value,
-            "coupon_id"=>$coupon->id
+            "final_price" => $final_price,
+            "discount_value" =>  $discount_value,
+            "admin_profit" => $max_commission_amount - $discount_value,
+            "coupon_id" => $coupon->id
         ];
     }
 
-    public static function getScheduledRequest($account){
+    public static function getScheduledRequest($account)
+    {
         $now = Carbon::now('Africa/Cairo');
         $today = $now->format('m/d/Y');
         $currentTime = $now->format('H:i');
         $oneHourAgo = $now->copy()->subHour()->format('H:i');
         $oneHourLater = $now->copy()->addHour()->format('H:i');
-        $query= Requests::query();
-        if(get_class($account)==="App\Modeles\User"){
+        $query = Requests::query();
+        if (get_class($account) === "App\Modeles\User") {
             $query->where('user_id', $account->id);
-        }else{
+        } else {
             $query->where('provider_id', $account->id);
         }
-        $scheduledRequests =$query->where('date', $today)
-            ->with(['user','service'])
+        $scheduledRequests = $query->where('date', $today)
+            ->with(['user', 'service'])
             ->get();
 
         foreach ($scheduledRequests as $scheduledRequest) {
@@ -205,14 +211,14 @@ class Helpers
             }
         }
         return [];
-
     }
-    public static function get_nearest_drivers($userLat, $userLng){
+    public static function get_nearest_drivers($userLat, $userLng)
+    {
         $radius = 20; // 20 km radius
 
-        
+
         $drivers = DB::table('providers')
-            ->select('id', 'name', 'lat', 'lng','user_id')
+            ->select('id', 'name', 'lat', 'lng', 'user_id')
             // ->where('last_seen', '>=', now()->subSeconds(15))
             ->selectRaw(
                 "(6371 * acos(cos(radians(?)) * cos(radians(lat)) 
@@ -223,7 +229,7 @@ class Helpers
             ->orderBy('distance')
             ->limit(50)
             ->get();
-    
+
         if ($drivers->isEmpty()) {
             throw new Exception('Not Found Drivers Nearest you', 400);
         }
@@ -234,7 +240,7 @@ class Helpers
             return "$lat,$lng";
         })->values()->implode('|');
 
-        
+
         $apiKey = env('GOOGLE_MAPS_API_KEY');
         $response = Http::get("https://maps.googleapis.com/maps/api/distancematrix/json", [
             'origins' => $origins,
@@ -242,10 +248,10 @@ class Helpers
             'key' => $apiKey,
             'units' => 'metric', // يستخدم الكيلو
             // 'mode'=> 'walking', // Specify the mode (walking, bicycling, transit, etc.)
-            'mode' => 'driving',  
+            'mode' => 'driving',
 
         ]);
-        
+
         $data = $response->json();
 
         $finalDrivers = [];
@@ -255,7 +261,7 @@ class Helpers
                 $distanceValue = $data['rows'][0]['elements'][$index]['distance']['value'] ?? null;
                 $durationText = $data['rows'][0]['elements'][$index]['duration']['text'] ?? null; // Added duration
                 $durationValue = $data['rows'][0]['elements'][$index]['duration']['value'] ?? null; // Added duration value
-        
+
                 if ($distanceValue !== null && $distanceValue <= 10000) { // 10000m = 10km
                     $finalDrivers[] = [
                         'id' => $driver->id,
@@ -272,12 +278,19 @@ class Helpers
         return $finalDrivers;
     }
 
-    public static function get_nearest_requests($driverLat, $driverLng){
+    public static function get_nearest_requests($driverLat, $driverLng, $account = null)
+    {
         $radius = 20; // 20 km radius
 
+
+        $query = Requests::query();
+        if ($account->role == "driver")
+            $query->where("type", "trip");
+        else
+            $query->whereIn('type', ["car_service", "home_service"]);
         
-        $requests = Requests::with(['user','provider'])
-            ->select('id',"service_id",'current_price','date','time','status','is_reminded','provider_id' ,'pickup_lat', 'pickup_lng','dropoff_lat','dropoff_lng', 'user_id')
+        $requests = $query->with(['user', 'provider'])
+            ->select('id', "service_id", 'current_price', 'date', 'time', 'status', 'is_reminded', 'provider_id', 'pickup_lat', 'pickup_lng', 'dropoff_lat', 'dropoff_lng', 'user_id')
             ->where('status', 'pending')
             ->selectRaw(
                 "(6371 * acos(cos(radians(?)) * cos(radians(pickup_lat)) 
@@ -286,22 +299,22 @@ class Helpers
             )
             ->having('distance', '<=', $radius)
             ->orderBy('distance')
-            
+
             ->limit(50)
             ->get();
-        
-    
+
+
         if ($requests->isEmpty()) {
-            return self::Response(null,'Not Found Requests Nearest you',201);
+            return self::Response(null, 'Not Found Requests Nearest you', 201);
         }
         // خطوة 2: حساب المسافة الفعلية باستخدام Google Distance Matrix API
         $origins = "{$driverLat},{$driverLng}";
         $destinations = $requests->map(function ($request) {
             return "{$request->pickup_lat},{$request->pickup_lng}";
         })->implode('|');
-        
-        
-        
+
+
+
         $apiKey = env('GOOGLE_MAPS_API_KEY');
         $response = Http::get("https://maps.googleapis.com/maps/api/distancematrix/json", [
             'origins' => $origins,
@@ -309,10 +322,10 @@ class Helpers
             'key' => $apiKey,
             'units' => 'metric', // يستخدم الكيلو
             // 'mode'=> 'walking', // Specify the mode (walking, bicycling, transit, etc.)
-            'mode' => 'driving',  
+            'mode' => 'driving',
 
         ]);
-        
+
         $data = $response->json();
 
         $finalRequests = [];
@@ -322,25 +335,25 @@ class Helpers
                 $distanceValue = $data['rows'][0]['elements'][$index]['distance']['value'] ?? null;
                 $durationText = $data['rows'][0]['elements'][$index]['duration']['text'] ?? null; // Added duration
                 $durationValue = $data['rows'][0]['elements'][$index]['duration']['value'] ?? null; // Added duration value
-        
+
                 if ($distanceValue !== null && $distanceValue <= 10000) { // 10000m = 10km
                     $finalRequests[] = [
                         'id' => $request->id,
                         'pickup_lat' => $request->pickup_lat,
                         'pickup_lng' => $request->pickup_lng,
-                        "dropoff_lat"=> $request->dropoff_lat,
-                        "dropoff_lng"=> $request->dropoff_lng,
-                        "current_price"=> $request->current_price,
-                        "date"=>$request->date,
-                        "time"=>$request->time,
-                        "status"=>$request->status,
-                        "is_reminded"=>$request->is_reminded,
+                        "dropoff_lat" => $request->dropoff_lat,
+                        "dropoff_lng" => $request->dropoff_lng,
+                        "current_price" => $request->current_price,
+                        "date" => $request->date,
+                        "time" => $request->time,
+                        "status" => $request->status,
+                        "is_reminded" => $request->is_reminded,
                         'user' => $request->user, // Assuming you want to include user info it saved as user_id
-                        'provider'=>$request->provider,
+                        'provider' => $request->provider,
                         'distance' => $distanceText,
                         'duration' => $durationText, // Added duration
                         'duration_value' => $durationValue, // Added duration value
-                        "service"=>$request->service,
+                        "service" => $request->service,
                     ];
                 }
             }
@@ -348,4 +361,47 @@ class Helpers
         return $finalRequests;
     }
 
+    public static function get_car_types()
+    {
+        Cache::rememberForever("car_types", function () {
+            return Services::where("status", true)
+                ->where("section", 'car_transportations')
+                ->orderBy("id", "DESC")->get();
+        });
+    }
+    public static function recache_car_types()
+    {
+        Cache::forget("car_types");
+        return self::get_car_types();
+    }
+
+    public static function get_brands($type_id)
+    {
+        return Cache::rememberForever("brands_$type_id", function () use ($type_id) {
+            return Brands::where("status", true)
+                ->where("service_id", $type_id)
+                ->orderBy("id", "DESC")
+                ->get();
+        });
+    }
+    public static function recache_brands($type_id)
+    {
+        Cache::forget("brands");
+        return self::get_brands($type_id);
+    }
+    public static function recache_models($brand_id)
+    {
+        Cache::forget("models_$brand_id");
+        return self::get_models($brand_id);
+    }
+
+    public static function get_models($brand_id)
+    {
+        return Cache::rememberForever("models_$brand_id", function () use ($brand_id) {
+            return Models::where("status", true)
+                ->where("brand_id", $brand_id)
+                ->orderBy("id", "DESC")
+                ->get();
+        });
+    }
 }

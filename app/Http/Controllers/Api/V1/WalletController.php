@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Illuminate\Http\Request;
-use App\Http\Controllers\Api\ResponseTrait;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Api\ResponseTrait;
 
 class WalletController extends Controller
 {
@@ -29,10 +29,10 @@ class WalletController extends Controller
                 'total' => $transactions->count(),
                 'transactions' => $transactions,
             ];
-            return $this->Response($data, "Transactions", 200);
+            return $this->Response($data, __("messages.Transactions"), 200);
         }
 
-        return $this->Response([], "User not found", 404);
+        return $this->Response([], __("messages.User not found"), 404);
     }
     public function deposit(Request $request)
     {
@@ -41,7 +41,7 @@ class WalletController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->Response($validator->errors(), "Validation Error", 422);
+            return $this->Response($validator->errors(), __("messages.Validation Error"), 422);
         }
 
         $user = $request->user();
@@ -50,9 +50,9 @@ class WalletController extends Controller
                 deposit($user, $request->amount, "Deposit to wallet");
             });
 
-            return $this->Response([], "Deposit successful", 200);
+            return $this->Response([], __("messages.Deposit successfully"), 200);
         }
 
-        return $this->Response([], "User not found", 404);
+        return $this->Response([], __("messages.User not found"), 404);
     }
 }

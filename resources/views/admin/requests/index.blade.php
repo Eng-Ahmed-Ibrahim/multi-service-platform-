@@ -46,12 +46,13 @@
                                     <tr>
 
                                         <td class="text-center">
-                                            <a href="">#{{$request->id}}</a>
+                                            <a href="{{route('admin.requests.show',$request->id)}}">#{{$request->id}}</a>
                                         </td>
 
                                         <td class="text-center">{{($request->accepted_price > 0 ? $request->accepted_price : $request->current_price)}}</td>
                                         <td class="text-center">{{ $request->created_at->format('d/m/Y') }}</td>
                                         <td>
+                                            
                                             @if($request->status=="pending")
                                             <span class="badge badge-light-warning me-2 text-lg">
                                                 {{__("messages.Pending")}}
@@ -64,7 +65,7 @@
                                             <span class="badge badge-light-success me-2 text-lg">
                                                 {{__("messages.Completed")}}
                                             </span>
-                                            @elseif($request->status=="canceled")
+                                            @elseif($request->status=="cancelled")
                                             <span class="badge badge-light-danger me-2 text-lg">
                                                 {{__("messages.Canceled")}}
                                             </span>
@@ -84,6 +85,8 @@
 
                                 </tbody>
                             </table>
+                                                    {{ $requests->links('vendor.pagination.custom') }}
+
                         </div>
                     </div>
                     <!--end::Card body-->

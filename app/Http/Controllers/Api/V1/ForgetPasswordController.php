@@ -20,7 +20,7 @@ class ForgetPasswordController extends Controller
             ]);
         
             if ($validator->fails()) {
-                return $this->Response($validator->errors(), "Validation Error", 422);
+                return $this->Response($validator->errors(), __("messages.Validation Error"), 422);
             }
         
             $user = User::where('phone', $request->phone)->first();
@@ -30,15 +30,15 @@ class ForgetPasswordController extends Controller
                 $data = [
                     "otp" => 00000,
                 ];
-                return $this->Response($data, "Otp sent", 200);
+                return $this->Response($data, __("messages.Otp sent"), 200);
             } elseif ($provider) {
                 $data = [
                     "otp" => 00000,
                 ];
-                return $this->Response($data, "Otp sent", 200);
+                return $this->Response($data, __("messages.Otp sent"), 200);
             }
         
-            return $this->Response([], "Otp sent", 404);
+            return $this->Response([], __("messages.Otp sent"), 404);
     }
     public function verify_otp(Request $request){
         $validator = Validator::make($request->all(), [
@@ -47,7 +47,7 @@ class ForgetPasswordController extends Controller
         ]);
     
         if ($validator->fails()) {
-            return $this->  Response($validator->errors(), "Validation Error", 422);
+            return $this->  Response($validator->errors(), __("messages.Validation Error"), 422);
         }
     
         $user = User::where('phone', $request->phone)->first();
@@ -62,9 +62,9 @@ class ForgetPasswordController extends Controller
                     "token" => $token,
                 ];
         
-                return $this->Response($data, "Otp verified", 200);
+                return $this->Response($data, __("messages.Otp verified"), 200);
             }
-            return $this->Response([], "Invalid OTP", 422);
+            return $this->Response([], __("messages.Invalid OTP"), 422);
         } elseif ($provider) {
             if ($request->otp == 00000) {
                 $token = $provider->createToken('Driver Token')->plainTextToken;
@@ -74,12 +74,12 @@ class ForgetPasswordController extends Controller
                     "token" => $token,
                 ];
         
-                return $this->Response($data, "Otp verified", 200);
+                return $this->Response($data, __("messages.Otp verified"), 200);
             }
-            return $this->Response([], "Invalid OTP", 422);
+            return $this->Response([], __("messages.Invalid OTP"), 422);
         }
     
-        return $this->Response([], "Phone number not found", 404);
+        return $this->Response([], __("messages.Phone number not found"), 404);
     }
     public function update_password(Request $request){
         $validator = Validator::make($request->all(), [
@@ -87,11 +87,11 @@ class ForgetPasswordController extends Controller
             "confirm_password" => "required|string|same:new_password",
         ]);
         if ($validator->fails()) {
-            return $this->Response($validator->errors(), "Validation Error", 422);
+            return $this->Response($validator->errors(), __("messages.Validation Error"), 422);
         }
         $user = request()->user();
         $user->password=Hash::make($request->new_password);
         $user->save();
-        return $this->Response([], "Phone number not found", 404);
+        return $this->Response([], __("messages.Phone number not found"), 404);
     }
 }

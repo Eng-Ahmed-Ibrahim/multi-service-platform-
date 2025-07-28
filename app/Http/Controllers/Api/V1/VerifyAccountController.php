@@ -21,7 +21,7 @@ class VerifyAccountController extends Controller
             "otp" => "required",
         ]);
         if ($validator->fails())
-            return $this->Response($validator->errors()->first(), "Validation Error", 422);
+            return $this->Response($validator->errors()->first(), __("messages.Validation Error"), 422);
 
         $user = $request->user();
         if ($request->otp == 00000) {
@@ -31,10 +31,10 @@ class VerifyAccountController extends Controller
             if ($user->role != "user") {
                 Processes::where("process_number", 1)->where("provider_id", $user->id)->update(["status" => "accepted"]);
             }
-            return $this->Response(null, "Phone number verified successfully", 200);
+            return $this->Response(null, __("messages.Phone number verified successfully"), 200);
         }
 
-        return $this->Response(null, "Phone number is available", 200);
+        return $this->Response(null, __("messages.Phone number is available"), 200);
     }
 
     public function verify_account(Request $request)
@@ -44,7 +44,7 @@ class VerifyAccountController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->Response($validator->errors()->first(), "Validation Error", 422);
+            return $this->Response($validator->errors()->first(), __("messages.Validation Error"), 422);
         }
 
         $files = $request->allFiles();
@@ -91,7 +91,7 @@ class VerifyAccountController extends Controller
 
         return $this->Response(
             null,
-            "Your information has been updated, and your account is now under review. You will be notified once the verification process is complete.",
+            __("messages.Your information has been updated, and your account is now under review. You will be notified once the verification process is complete."),
             200
         );
     }

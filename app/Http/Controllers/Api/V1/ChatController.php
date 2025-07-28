@@ -55,9 +55,9 @@ class ChatController extends Controller
         $room =$this->getOrCreateChatRoom($user_id, $provider_id, $request->request_id);
 
         if (!$room) {
-            return $this->Response(null, "Failed to find or create a chat room.", 500);
+            return $this->Response(null, __("messages.Failed to find or create a chat room."), 500);
         }
-        return $this->Response($room->messages, "Messages Fetched Successfully", 200);
+        return $this->Response($room->messages, __("messages.Messages Fetched Successfully"), 200);
 
     }
     public function send_message(Request $request)
@@ -75,7 +75,7 @@ class ChatController extends Controller
         $room =$this->getOrCreateChatRoom($user_id, $provider_id, $request->request_id);
 
         if (!$room) {
-            return $this->Response(null, "Failed to find or create a chat room.", 500);
+            return $this->Response(null, __("messages.Failed to find or create a chat room."), 500);
         }
         $message=ChatMessages::create([
             "sender_id"=>$request->user()->id,
@@ -101,6 +101,6 @@ class ChatController extends Controller
             "request_id" => $request->request_id,
         ];
         Helpers::push_notification($data);
-        return $this->Response($message, "Message Sent Successfully", 201);
+        return $this->Response($message, __("messages.Message Sent Successfully"), 201);
     }
 }

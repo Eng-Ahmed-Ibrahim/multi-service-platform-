@@ -105,6 +105,7 @@
 										<div class="menu-item px-3">
 											<form action="{{route('admin.services.delete',$service->id)}}" id="delete-form" method="post">
 												@csrf
+												@method('DELETE')
 												<button type="button" onclick="if(confirm('{{__('messages.Are_you_sure')}}')) document.getElementById('delete-form').submit()" class="menu-link px-3 btn " data-kt-ecommerce-order-filter="delete_row">{{__("messages.Delete")}}</button>
 											</form>
 										</div>

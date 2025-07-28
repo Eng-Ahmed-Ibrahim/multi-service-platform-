@@ -24,13 +24,13 @@ class RequestController extends Controller
                 "is_scheduled"=>1,
                 "requests"=>array($scheduleRequest),
             ];
-            return $this->Response($data, "You Have A Schedule Request , Be Ready", 201);
+            return $this->Response($data, __("messages.You Have A Schedule Request , Be Ready"), 201);
         }
-        $query = Requests::query();
-        if ($request->user()->role == "driver")
-            $query->where("type", "trip");
-        else 
-            $query->whereIn('type',["car_service","home_service"]);
+        // $query = Requests::query();
+        // if ($request->user()->role == "driver")
+        //     $query->where("type", "trip");
+        // else 
+        //     $query->whereIn('type',["car_service","home_service"]);
         // $UsersRequests = $query->with(["user"])
         //     ->whereIn("status", ["pending","accepted"])
         //     ->where(function ($q) use ($request) {
@@ -41,7 +41,7 @@ class RequestController extends Controller
         //     ->orderBy("id", 'DESC')
         //     ->get();
         $driver=$request->user();
-        $nearest_request= Helpers::get_nearest_requests($driver->lat,$driver->lng);
+        $nearest_request= Helpers::get_nearest_requests($driver->lat,$driver->lng,$driver);
         $data=[
             "is_scheduled"=>0,
             "requests"=>$nearest_request,
@@ -54,7 +54,7 @@ class RequestController extends Controller
             "request_id" => "required|exists:requests,id",
         ]);
         if ($validator->fails())
-            return $this->Response($validator->errors(), "Validation Error", 422);
+            return $this->Response($validator->errors(), __("messages.Validation Error"), 422);
         $offers = Offers::where("provider_id", $request->user()->id)
             ->where("request_id", $request->request_id)
             ->with(["provider"])
@@ -71,7 +71,7 @@ class RequestController extends Controller
             'time'         => 'nullable|string|max:255',
         ]);
         if ($validator->fails()) {
-            return $this->Response($validator->errors()->keys(), "Validation Error", 422);
+            return $this->Response($validator->errors()->keys(), __("messages.Validation Error"), 422);
         }
         $ride_request = Requests::find($request->request_id);
         if ($ride_request->status !== 'pending') {
@@ -114,7 +114,7 @@ class RequestController extends Controller
             "offer_id" => "required|exists:offers,id",
         ]);
         if ($validator->fails()) {
-            return $this->Response($validator->errors()->keys(), "Validation Error", 422);
+            return $this->Response($validator->errors()->keys(), __("messages.Validation Error"), 422);
         }
 
         $offer = Offers::find($request->offer_id);
@@ -141,7 +141,7 @@ class RequestController extends Controller
             "request_id" => "required|exists:requests,id",
         ]);
         if ($validator->fails()) {
-            return $this->Response($validator->errors()->keys(), "Validation Error", 422);
+            return $this->Response($validator->errors()->keys(), __("messages.Validation Error"), 422);
         }
         $cur_request = Requests::find($request->request_id);
         if ($cur_request->provider_id != $request->user()->id)
@@ -169,7 +169,7 @@ class RequestController extends Controller
             "request_id" => "required|exists:requests,id",
         ]);
         if ($validator->fails()) {
-            return $this->Response($validator->errors()->keys(), "Validation Error", 422);
+            return $this->Response($validator->errors()->keys(), __("messages.Validation Error"), 422);
         }
         $cur_request = Requests::find($request->request_id);
         if ($cur_request->provider_id != $request->user()->id)

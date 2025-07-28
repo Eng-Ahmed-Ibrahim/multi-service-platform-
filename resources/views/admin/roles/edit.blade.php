@@ -117,7 +117,6 @@
 						<!--begin::Actions-->
 						<div class="text-center pt-15">
 							<a href="{{route('admin.roles.index')}}" class="btn btn-danger me-3">{{__('messages.Cancel')}}</a>
-							<button type="reset" class="btn btn-light me-3" data-kt-roles-modal-action="cancel">{{__('messages.Retreat')}}</button>
 							<button type="submit" class="btn btn-primary" data-kt-roles-modal-action="submit">
 								<span class="indicator-label">{{__('messages.Save')}}</span>
 								<span class="indicator-progress">{{__('messages.Please_wait...')}} <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>

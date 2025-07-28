@@ -3,9 +3,10 @@
 namespace App\Http;
 
 use App\Http\Middleware\LangMiddleware;
+use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\CheckUserAuthentication;
-use App\Http\Middleware\CheckDriverAuthentication;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use App\Http\Middleware\CheckDriverAuthentication;
 
 class Kernel extends HttpKernel
 {
@@ -46,6 +47,7 @@ class Kernel extends HttpKernel
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            SetLocaleMiddleware::class,
         ],
     ];
 
@@ -76,5 +78,6 @@ class Kernel extends HttpKernel
         'auth.driver' => \App\Http\Middleware\CheckDriverAuthentication::class,
         'auth.handyman' => \App\Http\Middleware\CheckHandymanAuthentication::class,
         'is_verified' => \App\Http\Middleware\CheckAccountVerified::class,
+        'lang'=>SetLocaleMiddleware::class
     ];
 }

@@ -40,16 +40,18 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            "password" => "required|min:8", 
+            "password"=>"required|min:6|confirmed",
             "name" => "required|string|max:255", 
             "email" => "required|email|unique:users,email", 
             "phone" => "required|unique:users,phone", 
+                        "country_code"=>"required",
+
         ]);
         $user=User::create([
             "password"=> bcrypt($request->password),
             "name"=>$request->name,
             "email"=>$request->email,
-            "phone"=>$request->phone,
+                "phone" =>"+". $request->country_code . $request->phone,
             "image"=>$request->hasFile("avatar") ?  Helpers::upload_files($request->avatar,'/uploads/users/') : null,
         ]);
         Toastr::success(trans('messages.added_successfully'));
@@ -69,6 +71,8 @@ class UserController extends Controller
             "name"=>"required",
             "phone"=>"required",
             "email"=>"required",
+                        "country_code"=>"required",
+
         ]);
         $user=User::find($request->user_id);
         if(! $user)
@@ -83,7 +87,7 @@ class UserController extends Controller
 
         $user->update([
             "name"=>$request->name,
-            "phone"=>$request->phone,
+                "phone" =>"+". $request->country_code . $request->phone,
             "email"=>$request->email,
         ]);
         Toastr::success(__("messages.Updated_successfully"));
