@@ -295,5 +295,5 @@ return [
     "Deposit successfully"=>"Deposit successfully",
     "User not found"=>"User not found",
     "Transactions"=>"Transactions",
-
+    "Terms and Condition Fetched Successfully"=>"Terms and Condition Fetched Successfully",
 ];

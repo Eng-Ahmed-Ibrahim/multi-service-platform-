@@ -281,5 +281,6 @@ return [
     "User not found" => "المستخدم غير موجود",
     "Transactions" => "المعاملات",
 
+    "Terms and Condition Fetched Successfully"=> "تم جلب الشروط والأحكام بنجاح",
 ];
 

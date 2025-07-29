@@ -43,6 +43,7 @@ Route::middleware(['auth:sanctum','is_verified'])->group(function(){
     Route::get("chat-messages",[ChatController::class,"get_messages"]);
     Route::post("send-message",[ChatController::class,"send_message"]);
     Route::get('/privacy-policy',[SettingsController::class,"privacy_policy"]);
+    Route::get('/terms',[SettingsController::class,"terms"]);
     Route::post("cancel-request",[ApiController::class,"cancel_request"]);
     Route::get("cancelation-reasons",[ApiController::class,"cancelation_reasons"]);
     Route::get("request-details",[ApiController::class,"request_details"]);
