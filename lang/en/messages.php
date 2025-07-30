@@ -296,4 +296,5 @@ return [
     "User not found"=>"User not found",
     "Transactions"=>"Transactions",
     "Terms and Condition Fetched Successfully"=>"Terms and Condition Fetched Successfully",
+    "Terms"=>"Terms and Condition",
 ];

@@ -19,6 +19,7 @@ class BusinessSettingController extends Controller
         $settings=BusinessSetting::all();
         return view($this->model_view_folder . 'index')
         ->with("settings",$settings)
+        ->with("settings_tab",null)
         ;
 
     }
@@ -34,10 +35,9 @@ class BusinessSettingController extends Controller
                 'value' => $request->values[$index]
             ]);
         }
-        session()->put("settings_tab", $request->tab);
-
+        
         Toastr::success(__("messages.Updated_successfully"));
-        return back();
+        return back()->with('settings_tab',$request->tab);
     }
     
 }

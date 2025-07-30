@@ -37,7 +37,7 @@
                             role="tablist">
                             <!--begin:::Tab item-->
                             <li class="nav-item" role="presentation">
-                                <a class="nav-link text-active-primary d-flex align-items-center  {{ session('setting_tab') ? (session('settings_tab') == 1 ? ' active' : ' ') : 'active' }} pb-5 "
+                                <a class="nav-link text-active-primary d-flex align-items-center  {{ session('setting_tab') ? ($settings_tab == 1 ? ' active' : ' ') : 'active' }} pb-5 "
                                     data-bs-toggle="tab" href="#general" aria-selected="true" role="tab">
                                     <!-- <i class="ki-duotone ki-home fs-2 me-2"></i> -->
                                     {{ __('messages.General') }}
@@ -45,7 +45,7 @@
                             </li>
                             <!--begin:::Tab item-->
                             <li class="nav-item" role="presentation">
-                                <a class="nav-link text-active-primary d-flex align-items-center  {{ session('settings_tab') == 2 ? ' active' : ' ' }}  pb-5 "
+                                <a class="nav-link text-active-primary d-flex align-items-center  {{ $settings_tab == 2 ? ' active' : ' ' }}  pb-5 "
                                     data-bs-toggle="tab" href="#Privacy" aria-selected="true" role="tab">
                                     <!-- <i class="ki-duotone ki-home fs-2 me-2"></i> -->
                                     {{ __('messages.Privacy') }}
@@ -53,10 +53,18 @@
                             </li>
                             <!--begin:::Tab item-->
                             <li class="nav-item" role="presentation">
-                                <a class="nav-link text-active-primary d-flex align-items-center  {{ session('settings_tab') == 3 ? ' active' : ' ' }}  pb-5 "
+                                <a class="nav-link text-active-primary d-flex align-items-center  {{ $settings_tab == 3 ? ' active' : ' ' }}  pb-5 "
                                     data-bs-toggle="tab" href="#Policy" aria-selected="true" role="tab">
                                     <!-- <i class="ki-duotone ki-home fs-2 me-2"></i> -->
                                     {{ __('messages.Policy') }}
+                                </a>
+                            </li>
+                            <!--begin:::Tab item-->
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link text-active-primary d-flex align-items-center  {{ $settings_tab == 4 ? ' active' : ' ' }}  pb-5 "
+                                    data-bs-toggle="tab" href="#Terms" aria-selected="true" role="tab">
+                                    <!-- <i class="ki-duotone ki-home fs-2 me-2"></i> -->
+                                    {{ __('messages.Terms') }}
                                 </a>
                             </li>
 
@@ -69,7 +77,7 @@
                         <div class="tab-content" id="myTabContent" data-select2-id="select2-data-myTabContent">
 
                             <!--begin:::Tab General-->
-                            <div class="tab-pane fade {{ session('settings_tab') ? (session('settings_tab') == 1 ? 'show active' : ' ') : 'show active' }}"
+                            <div class="tab-pane fade {{ $settings_tab ? ($settings_tab == 1 ? 'show active' : ' ') : 'show active' }}"
                                 id="general" role="tabpanel" data-select2-id="select2-data-general">
                                 <form action="{{ route('admin.settings.update') }}" method="post">
                                     @csrf
@@ -103,7 +111,7 @@
                             <!-- End :: Tab General -->
 
                             <!--begin:::Tab Privacy-->
-                            <div class="tab-pane fade  {{ session('settings_tab') == 2 ? 'show active' : ' ' }} "
+                            <div class="tab-pane fade  {{ $settings_tab == 2 ? 'show active' : ' ' }} "
                                 id="Privacy" role="tabpanel" data-select2-id="select2-data-general">
                                 <form action="{{ route('admin.settings.update') }}" method="post">
                                     @csrf
@@ -160,8 +168,8 @@
                             </div>
                             <!-- End :: Tab Privacy -->
                             <!--begin:::Tab Policy-->
-                            <div class="tab-pane fade  {{ session('settings_tab') == 3 ? 'show active' : ' ' }}"
-                                id="Policy" role="tabpanel" data-select2-id="select2-data-general">
+                            <div class="tab-pane fade  {{ $settings_tab == 3 ? 'show active' : ' ' }}"
+                                id="Policy" role="tabpanel" data-select2-id="select2-data-Policy">
                                 <form action="{{ route('admin.settings.update') }}" method="post">
                                     @csrf
                                     <input type="hidden" name="tab" value="3" id="">
@@ -203,6 +211,60 @@
                                         <div class=" col-md-6 col-xs-12 mb-3 form-floating">
                                             <textarea style="height: 100px;" class="form-control mb-4" name="values[]" placeholder="Leave a comment here"
                                                 id="floatingTextarea">{{ $settings->where('key', 'policy_drivers_ar')->first()->value }}</textarea>
+                                            <label for="floatingTextarea">{{ __('messages.In_Arabic') }}</label>
+                                        </div>
+                                        @can('update settings')
+                                            <button class="btn btn-primary w-100">{{ __('messages.Update') }}</button>
+                                        @endcan
+                                    </div>
+                                </form>
+
+                            </div>
+                            <!-- End :: Tab Policy -->
+                            <!--begin:::Tab Terms-->
+                            <div class="tab-pane fade  {{ $settings_tab == 4 ? 'show active' : ' ' }}"
+                                id="Terms" role="tabpanel" data-select2-id="select2-data-Terms">
+                                <form action="{{ route('admin.settings.update') }}" method="post">
+                                    @csrf
+                                    <input type="hidden" name="tab" value="4" id="">
+                                    <input type="text" hidden name="keys[]" value="terms_users_en">
+                                    <input type="text" hidden name="keys[]" value="terms_users_ar">
+                                    <input type="text" hidden name="keys[]" value="terms_handymans_en">
+                                    <input type="text" hidden name="keys[]" value="terms_handymans_ar">
+                                    <input type="text" hidden name="keys[]" value="terms_drivers_en">
+                                    <input type="text" hidden name="keys[]" value="terms_drivers_ar">
+                                    <div class="row">
+                                        <h4 class="mb-3">@lang('messages.Users')</h4>
+                                        <div class=" col-md-6 col-xs-12 mb-3 form-floating">
+                                            <textarea style="height: 100px;" class="form-control mb-4" name="values[]" placeholder="Leave a comment here"
+                                                id="floatingTextarea">{{ $settings->where('key', 'terms_users_en')->first()->value }}</textarea>
+                                            <label for="floatingTextarea">{{ __('messages.In_English') }}</label>
+                                        </div>
+                                        <div class=" col-md-6 col-xs-12 mb-3 form-floating">
+                                            <textarea style="height: 100px;" class="form-control mb-4" name="values[]" placeholder="Leave a comment here"
+                                                id="floatingTextarea">{{ $settings->where('key', 'terms_users_ar')->first()->value }}</textarea>
+                                            <label for="floatingTextarea">{{ __('messages.In_Arabic') }}</label>
+                                        </div>
+                                        <h4 class="mb-3">@lang('messages.Handymans')</h4>
+                                        <div class=" col-md-6 col-xs-12 mb-3 form-floating">
+                                            <textarea style="height: 100px;" class="form-control mb-4" name="values[]" placeholder="Leave a comment here"
+                                                id="floatingTextarea">{{ $settings->where('key', 'terms_handymans_en')->first()->value }}</textarea>
+                                            <label for="floatingTextarea">{{ __('messages.In_English') }}</label>
+                                        </div>
+                                        <div class=" col-md-6 col-xs-12 mb-3 form-floating">
+                                            <textarea style="height: 100px;" class="form-control mb-4" name="values[]" placeholder="Leave a comment here"
+                                                id="floatingTextarea">{{ $settings->where('key', 'terms_handymans_ar')->first()->value }}</textarea>
+                                            <label for="floatingTextarea">{{ __('messages.In_Arabic') }}</label>
+                                        </div>
+                                        <h4 class="mb-3">@lang('messages.Drivers')</h4>
+                                        <div class=" col-md-6 col-xs-12 mb-3 form-floating">
+                                            <textarea style="height: 100px;" class="form-control mb-4" name="values[]" placeholder="Leave a comment here"
+                                                id="floatingTextarea">{{ $settings->where('key', 'terms_drivers_en')->first()->value }}</textarea>
+                                            <label for="floatingTextarea">{{ __('messages.In_English') }}</label>
+                                        </div>
+                                        <div class=" col-md-6 col-xs-12 mb-3 form-floating">
+                                            <textarea style="height: 100px;" class="form-control mb-4" name="values[]" placeholder="Leave a comment here"
+                                                id="floatingTextarea">{{ $settings->where('key', 'terms_drivers_ar')->first()->value }}</textarea>
                                             <label for="floatingTextarea">{{ __('messages.In_Arabic') }}</label>
                                         </div>
                                         @can('update settings')

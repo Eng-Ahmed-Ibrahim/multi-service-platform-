@@ -282,5 +282,6 @@ return [
     "Transactions" => "المعاملات",
 
     "Terms and Condition Fetched Successfully"=> "تم جلب الشروط والأحكام بنجاح",
+    "Terms"=>"الشروط والأحكام"
 ];
 
