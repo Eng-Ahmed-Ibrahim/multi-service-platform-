@@ -26,20 +26,7 @@ class RequestController extends Controller
             ];
             return $this->Response($data, __("messages.You Have A Schedule Request , Be Ready"), 201);
         }
-        // $query = Requests::query();
-        // if ($request->user()->role == "driver")
-        //     $query->where("type", "trip");
-        // else 
-        //     $query->whereIn('type',["car_service","home_service"]);
-        // $UsersRequests = $query->with(["user"])
-        //     ->whereIn("status", ["pending","accepted"])
-        //     ->where(function ($q) use ($request) {
-        //         $q->whereNull("required_gender")
-        //             ->orWhere("required_gender", $request->user()->gender);
-        //     })
-        //     ->with(['service:id,name,name_ar,image'])
-        //     ->orderBy("id", 'DESC')
-        //     ->get();
+
         $driver=$request->user();
         $nearest_request= Helpers::get_nearest_requests($driver->lat,$driver->lng,$driver);
         $data=[

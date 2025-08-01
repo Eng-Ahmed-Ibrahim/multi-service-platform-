@@ -282,6 +282,17 @@ return [
     "Transactions" => "المعاملات",
 
     "Terms and Condition Fetched Successfully"=> "تم جلب الشروط والأحكام بنجاح",
-    "Terms"=>"الشروط والأحكام"
+    "Terms"=>"الشروط والأحكام",
+    "No provider accepts the request yet"=>"لا يوجد مزود اقبل الطلب بعد",
+    "Payment Mode" => "طريقة الدفع",
+    "Start Time" => "وقت البدء",
+    "Pickup" => "الاستلام",
+    "Payment Method" => "وسيلة الدفع",
+    "Paid" => "تم الدفع",
+    "Dropoff"=>"التوصيل",
+    "Request" => "الطلب",
+    "User Details" => "تفاصيل المستخدم",
+    "Provider Details" => "تفاصيل المزود",
+
 ];
 

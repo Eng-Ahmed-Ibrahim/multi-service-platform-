@@ -20,7 +20,6 @@ class LocationService
 
         if (count($results) > 0) {
             foreach ($results as $result) {
-                // تجاهل الـ Plus Codes
                 if (!str_contains($result['formatted_address'], '+')) {
                     return $result['formatted_address'];
                 }

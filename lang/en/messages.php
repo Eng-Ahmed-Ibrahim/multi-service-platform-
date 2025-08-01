@@ -297,4 +297,15 @@ return [
     "Transactions"=>"Transactions",
     "Terms and Condition Fetched Successfully"=>"Terms and Condition Fetched Successfully",
     "Terms"=>"Terms and Condition",
+    "No provider accepts the request yet"=>"No provider accepts the request yet",
+    "Payment Mode"=>"Payment Mode",
+    "Start Time"=>"Start Time",
+    "Pickup"=>"Pickup",
+    "Payment Method"=>"Payment Method",
+    "Paid"=>"Paid",
+    "Dropoff"=>"Dropoff",
+
+    "Request"=>"Request",
+    "User Details"=>"User Details",
+    "Provider Details"=>"Provider Details",
 ];
